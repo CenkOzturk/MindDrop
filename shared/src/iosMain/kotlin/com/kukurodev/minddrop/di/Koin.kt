@@ -6,7 +6,7 @@ import org.koin.core.context.startKoin
 
 object KoinInitializer {
 
-    fun init() {
+    fun start() {
         val database = getRoomDatabase(
             getDatabaseBuilder()
         )

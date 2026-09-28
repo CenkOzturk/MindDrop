@@ -59,9 +59,30 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
+
+            implementation(libs.androidx.navigation.compose)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+
+        getByName("androidDeviceTest") {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.androidx.testExt.junit)
+
+                implementation("androidx.test:core:1.7.0")
+                implementation("androidx.test:runner:1.7.0")
+
+                implementation(libs.androidx.espresso.core)
+
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
+
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+            }
         }
     }
 }
