@@ -17,6 +17,10 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+
+    implementation(libs.koin.core)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.sqlite.bundled)
 }
 
 android {
