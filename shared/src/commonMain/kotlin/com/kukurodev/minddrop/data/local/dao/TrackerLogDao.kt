@@ -26,4 +26,12 @@ interface TrackerLogDao {
                 "LIMIT 1"
     )
     suspend fun getLastLog(trackerId: Long): TrackerLogEntity?
+
+    @Query(
+        """
+    SELECT * FROM tracker_logs
+    ORDER BY completedAt DESC
+    """
+    )
+    fun observeAllLogs(): Flow<List<TrackerLogEntity>>
 }

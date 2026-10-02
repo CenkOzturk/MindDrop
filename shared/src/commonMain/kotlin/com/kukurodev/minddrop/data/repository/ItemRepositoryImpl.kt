@@ -40,6 +40,20 @@ class ItemRepositoryImpl(
         trackerLogDao.insert(log.toEntity())
     }
 
+    override suspend fun getLastTrackerLog(trackerId: Long): TrackerLog? {
+        return trackerLogDao
+            .getLastLog(trackerId)
+            ?.toDomain()
+    }
+
+    override fun observeAllTrackerLogs(): Flow<List<TrackerLog>> {
+        return trackerLogDao
+            .observeAllLogs()
+            .map { logs ->
+                logs.map { it.toDomain() }
+            }
+    }
+
     override fun observeTrackerLogs(
         trackerId: Long
     ): Flow<List<TrackerLog>> =

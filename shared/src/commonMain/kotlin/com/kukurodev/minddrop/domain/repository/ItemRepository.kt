@@ -18,5 +18,9 @@ interface ItemRepository {
 
     suspend fun addTrackerLog(log: TrackerLog)
 
+    suspend fun getLastTrackerLog(trackerId: Long): TrackerLog?
+
+    fun observeAllTrackerLogs(): Flow<List<TrackerLog>>
+
     fun observeTrackerLogs(trackerId: Long): Flow<List<TrackerLog>>
 }

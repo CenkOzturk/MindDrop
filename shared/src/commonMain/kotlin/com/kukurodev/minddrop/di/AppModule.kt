@@ -6,6 +6,9 @@ import com.kukurodev.minddrop.data.local.database.AppDatabase
 import com.kukurodev.minddrop.data.repository.ItemRepositoryImpl
 import com.kukurodev.minddrop.domain.repository.ItemRepository
 import com.kukurodev.minddrop.feature.home.HomeViewModel
+import com.kukurodev.minddrop.feature.inbox.InboxViewModel
+import com.kukurodev.minddrop.feature.todo.TodoViewModel
+import com.kukurodev.minddrop.feature.tracker.TrackerViewModel
 import org.koin.dsl.module
 
 val commonModule = module {
@@ -27,6 +30,21 @@ val commonModule = module {
 
     factory {
         HomeViewModel(
+            repository = get()
+        )
+    }
+    factory {
+        InboxViewModel(
+            repository = get()
+        )
+    }
+    factory {
+        TodoViewModel(
+            repository = get()
+        )
+    }
+    factory {
+        TrackerViewModel(
             repository = get()
         )
     }

@@ -3,6 +3,7 @@ package com.kukurodev.minddrop.feature.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +46,30 @@ fun HomeScreen(
             title = "Tracker",
             count = uiState.trackerCount
         )
+
+        Text(
+            text = "Today",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        if (uiState.todayItems.isEmpty()) {
+            Text(
+                text = "Bugün yapılacak görev yok.",
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        } else {
+            uiState.todayItems.forEach { item ->
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = item.title,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
