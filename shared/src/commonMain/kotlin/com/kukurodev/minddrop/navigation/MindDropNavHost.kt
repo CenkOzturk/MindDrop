@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.kukurodev.minddrop.feature.home.HomeScreen
 import com.kukurodev.minddrop.feature.inbox.InboxScreen
 import com.kukurodev.minddrop.feature.navigation.MindDropBottomBar
+import com.kukurodev.minddrop.feature.reminder.ReminderScreen
 import com.kukurodev.minddrop.feature.todo.TodoScreen
 import com.kukurodev.minddrop.feature.tracker.TrackerScreen
 
@@ -38,6 +39,10 @@ fun MindDropNavHost() {
 
             composable("tracker") {
                 TrackerScreen()
+            }
+
+            composable("reminder") {
+                ReminderScreen()
             }
         }
     }

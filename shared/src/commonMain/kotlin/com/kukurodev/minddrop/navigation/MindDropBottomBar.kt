@@ -16,7 +16,8 @@ private val bottomNavItems = listOf(
     BottomNavItem("home", "Home"),
     BottomNavItem("inbox", "Inbox"),
     BottomNavItem("todo", "Todo"),
-    BottomNavItem("tracker", "Tracker")
+    BottomNavItem("tracker", "Tracker"),
+    BottomNavItem("reminder", "Reminder")
 )
 
 @Composable

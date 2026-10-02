@@ -7,6 +7,7 @@ import com.kukurodev.minddrop.data.repository.ItemRepositoryImpl
 import com.kukurodev.minddrop.domain.repository.ItemRepository
 import com.kukurodev.minddrop.feature.home.HomeViewModel
 import com.kukurodev.minddrop.feature.inbox.InboxViewModel
+import com.kukurodev.minddrop.feature.reminder.ReminderViewModel
 import com.kukurodev.minddrop.feature.todo.TodoViewModel
 import com.kukurodev.minddrop.feature.tracker.TrackerViewModel
 import org.koin.dsl.module
@@ -47,6 +48,10 @@ val commonModule = module {
         TrackerViewModel(
             repository = get()
         )
+    }
+
+    factory {
+        ReminderViewModel(repository = get())
     }
 }
 
