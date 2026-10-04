@@ -51,7 +51,10 @@ val commonModule = module {
     }
 
     factory {
-        ReminderViewModel(repository = get())
+        ReminderViewModel(
+            repository = get(),
+            scheduler = get()
+        )
     }
 }
 

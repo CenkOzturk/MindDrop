@@ -24,8 +24,8 @@ class ItemRepositoryImpl(
     override suspend fun getItem(id: Long): Item? =
         itemDao.getItem(id)?.toDomain()
 
-    override suspend fun addItem(item: Item) {
-        itemDao.insert(item.toEntity())
+    override suspend fun addItem(item: Item): Long {
+        return itemDao.insert(item.toEntity())
     }
 
     override suspend fun updateItem(item: Item) {

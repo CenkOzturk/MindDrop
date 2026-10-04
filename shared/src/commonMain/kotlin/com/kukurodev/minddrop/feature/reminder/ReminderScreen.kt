@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -30,12 +33,22 @@ import kotlin.time.Instant
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import kotlinx.coroutines.launch
+import kotlinx.datetime.number
 
 @Composable
 fun ReminderScreen(
     viewModel: ReminderViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    val scope = rememberCoroutineScope()
 
     var title by remember {
         mutableStateOf("")
@@ -56,186 +69,270 @@ fun ReminderScreen(
         mutableIntStateOf(now.minute)
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    var dateTimeError by remember {
+        mutableStateOf(false)
+    }
 
-        item {
-            Text(
-                text = "Reminder",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            TextField(
-                value = title,
-                onValueChange = { title = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                placeholder = {
-                    Text("Neyi hatırlamak istiyorsun?")
-                }
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
             )
         }
+    ) { paddingValues ->
 
-        item {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
 
-            Text(
-                text = "Tarih",
-                style = MaterialTheme.typography.titleMedium
-            )
+            item {
+                Text(
+                    text = "Reminder",
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        selectedDate = selectedDate.minus(
-                            DatePeriod(days = 1)
-                        )
+                TextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    placeholder = {
+                        Text("Neyi hatırlamak istiyorsun?")
                     }
+                )
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
+                Text(
+                    text = "Tarih",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("<")
+                    Button(
+                        onClick = {
+                            selectedDate = selectedDate.minus(
+                                DatePeriod(days = 1)
+                            )
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text("<")
+                    }
+
+                    Text(
+                        text = "${selectedDate.day}." +
+                                "${selectedDate.month.number}." +
+                                "${selectedDate.year}"
+                    )
+
+                    Button(
+                        onClick = {
+                            selectedDate = selectedDate.plus(
+                                DatePeriod(days = 1)
+                            )
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text(">")
+                    }
+                }
+
+                if (dateTimeError) {
+                    Text(
+                        text = "Geçmiş bir tarih veya saat seçemezsin.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            item {
+                Text(
+                    text = "Saat",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            val result = changeTime(
+                                hour = selectedHour,
+                                minute = selectedMinute,
+                                amountMinutes = -60,
+                                date = selectedDate,
+                                onDateChanged = {
+                                    selectedDate = it
+                                }
+                            )
+
+                            selectedHour = result.first
+                            selectedMinute = result.second
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text("- Saat")
+                    }
+
+                    Button(
+                        onClick = {
+                            val result = changeTime(
+                                hour = selectedHour,
+                                minute = selectedMinute,
+                                amountMinutes = -5,
+                                date = selectedDate,
+                                onDateChanged = {
+                                    selectedDate = it
+                                }
+                            )
+
+                            selectedHour = result.first
+                            selectedMinute = result.second
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text("-5 dk")
+                    }
+
+                    Button(
+                        onClick = {
+                            val result = changeTime(
+                                hour = selectedHour,
+                                minute = selectedMinute,
+                                amountMinutes = 60,
+                                date = selectedDate,
+                                onDateChanged = {
+                                    selectedDate = it
+                                }
+                            )
+
+                            selectedHour = result.first
+                            selectedMinute = result.second
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text("+ Saat")
+                    }
+
+                    Button(
+                        onClick = {
+                            val result = changeTime(
+                                hour = selectedHour,
+                                minute = selectedMinute,
+                                amountMinutes = 5,
+                                date = selectedDate,
+                                onDateChanged = {
+                                    selectedDate = it
+                                }
+                            )
+
+                            selectedHour = result.first
+                            selectedMinute = result.second
+                            dateTimeError = false
+                        }
+                    ) {
+                        Text("+5 dk")
+                    }
                 }
 
                 Text(
-                    text = "${selectedDate.day}." +
-                            "${selectedDate.monthNumber}." +
-                            "${selectedDate.year}"
+                    text = "${selectedHour.toString().padStart(2, '0')}:" +
+                            selectedMinute.toString().padStart(2, '0'),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        val dateTime = LocalDateTime(
+                            year = selectedDate.year,
+                            month = selectedDate.month,
+                            day = selectedDate.day,
+                            hour = selectedHour,
+                            minute = selectedMinute
+                        )
+
+                        val dueAt = dateTime
+                            .toInstant(TimeZone.currentSystemDefault())
+                            .toEpochMilliseconds()
+
+                        if (dueAt <= Clock.System.now().toEpochMilliseconds()) {
+                            dateTimeError = true
+                            return@Button
+                        }
+
+                        viewModel.addReminder(
+                            title = title,
+                            dueAt = dueAt
+                        )
+
+                        title = ""
+                    },
+                    enabled = title.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Reminder Ekle")
+                }
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
 
-                Button(
-                    onClick = {
-                        selectedDate = selectedDate.plus(
-                            DatePeriod(days = 1)
-                        )
-                    }
-                ) {
-                    Text(">")
-                }
-            }
-        }
-
-        item {
-            Text(
-                text = "Saat",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = {
-                        selectedHour =
-                            (selectedHour + 1) % 24
-                    }
-                ) {
-                    Text("+ Saat")
-                }
-
-                Button(
-                    onClick = {
-                        val totalMinutes =
-                            selectedHour * 60 +
-                                    selectedMinute +
-                                    5
-
-                        selectedHour =
-                            (totalMinutes / 60) % 24
-
-                        selectedMinute =
-                            totalMinutes % 60
-                    }
-                ) {
-                    Text("+5 dk")
-                }
+                Text(
+                    text = "Reminder'lar",
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
 
-            Text(
-                text = "${selectedHour.toString().padStart(2, '0')}:" +
-                        selectedMinute.toString().padStart(2, '0'),
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
+            items(uiState.items) { item ->
 
-        item {
-            Button(
-                onClick = {
-                    val dateTime = LocalDateTime(
-                        year = selectedDate.year,
-                        month = selectedDate.month,
-                        day = selectedDate.day,
-                        hour = selectedHour,
-                        minute = selectedMinute
-                    )
-
-                    val dueAt = dateTime
-                        .toInstant(TimeZone.currentSystemDefault())
-                        .toEpochMilliseconds()
-
-                    viewModel.addReminder(
-                        title = title,
-                        dueAt = dueAt
-                    )
-
-                    title = ""
-                },
-                enabled = title.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Reminder Ekle")
-            }
-        }
-
-        item {
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            Text(
-                text = "Reminder'lar",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-
-        items(uiState.items) { item ->
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = item.title
-                    )
-
-                    item.dueAt?.let { dueAt ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
                         Text(
-                            text = formatReminderDate(dueAt),
-                            style = MaterialTheme.typography.bodySmall
+                            text = item.title
                         )
-                    }
-                }
 
-                Button(
-                    onClick = {
-                        viewModel.deleteReminder(item)
+                        item.dueAt?.let { dueAt ->
+                            Text(
+                                text = formatReminderDate(dueAt),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
-                ) {
-                    Text("Sil")
+
+                    Button(
+                        onClick = {
+                            viewModel.deleteReminder(item)
+                        }
+                    ) {
+                        Text("Sil")
+                    }
                 }
             }
         }
+
     }
 }
 
@@ -253,4 +350,53 @@ private fun formatReminderDate(
             "${dateTime.year} " +
             "${dateTime.hour.toString().padStart(2, '0')}:" +
             dateTime.minute.toString().padStart(2, '0')
+}
+
+private fun changeTime(
+    hour: Int,
+    minute: Int,
+    amountMinutes: Int,
+    date: kotlinx.datetime.LocalDate,
+    onDateChanged: (kotlinx.datetime.LocalDate) -> Unit
+): Pair<Int, Int> {
+
+    val totalMinutes =
+        hour * 60 + minute + amountMinutes
+
+    return when {
+        totalMinutes < 0 -> {
+            onDateChanged(
+                date.minus(DatePeriod(days = 1))
+            )
+
+            val normalized =
+                totalMinutes + 24 * 60
+
+            Pair(
+                normalized / 60,
+                normalized % 60
+            )
+        }
+
+        totalMinutes >= 24 * 60 -> {
+            onDateChanged(
+                date.plus(DatePeriod(days = 1))
+            )
+
+            val normalized =
+                totalMinutes - 24 * 60
+
+            Pair(
+                normalized / 60,
+                normalized % 60
+            )
+        }
+
+        else -> {
+            Pair(
+                totalMinutes / 60,
+                totalMinutes % 60
+            )
+        }
+    }
 }
