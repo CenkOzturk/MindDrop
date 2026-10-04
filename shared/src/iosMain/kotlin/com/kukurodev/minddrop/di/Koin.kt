@@ -14,7 +14,8 @@ object KoinInitializer {
         startKoin {
             modules(
                 commonModule,
-                databaseModule(database)
+                databaseModule(database),
+                iosModule
             )
         }
     }
